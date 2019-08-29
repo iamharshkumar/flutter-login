@@ -4,26 +4,27 @@ import 'package:flutter/material.dart';
 import '../mixins/validation_mixins.dart';
 import 'package:http/http.dart';
 import 'home_screen.dart';
-import 'signup_screens.dart';
 
-class LoginScreen extends StatefulWidget {
+class SignUpScreen extends StatefulWidget {
   createState() {
-    return LoginScreenState();
+    return SignUpScreenState();
   }
 }
 
-class LoginScreenState extends State<LoginScreen> with ValidationMixin {
+class SignUpScreenState extends State<SignUpScreen> with ValidationMixin {
   final formKey = GlobalKey<FormState>();
   String username = '';
   String password = '';
+  String email = '';
 
-  void login(String username, String password) async {
+  void login(String username, String password, String email) async {
     final Map<String, dynamic> userData = {
+      'email': email,
       'username': username,
-      'password': password
+      'password': password,
     };
     var response = await post(
-      'http://192.168.1.18:8000/api/login/',
+      'http://192.168.1.18:8000/api/signup/',
       body: json.encode(userData),
       headers: {'Content-Type': 'application/json'},
     );
@@ -32,31 +33,42 @@ class LoginScreenState extends State<LoginScreen> with ValidationMixin {
     print(responseData);
     if (responseData.containsKey('token')) {
       Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
-    } else {
-      final snackBar = SnackBar(content: Text(responseData['error']));
-
-    // Find the Scaffold in the widget tree and use it to show a SnackBar.
-      Scaffold.of(context).showSnackBar(snackBar);
     }
   }
 
   Widget build(context) {
-    return Container(
-      margin: EdgeInsets.all(20.0),
+    return MaterialApp(
+      title: ('SignUp'),
+      home: Scaffold(
+        body: Container(
+          margin: EdgeInsets.all(20.0),
       child: Form(
         key: formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            usernameField(),
             emailField(),
             passwordField(),
             Container(margin: EdgeInsets.only(bottom: 25.0)),
-            submitButton(),
-            signUp()
+            submitButton()
           ],
         ),
       ),
+    ),
+      ),
+    );
+
+  }
+
+  Widget usernameField() {
+    return TextFormField(
+      decoration:
+      InputDecoration(labelText: 'Username', hintText: 'example123'),
+      onSaved: (value) {
+        username = value;
+      },
     );
   }
 
@@ -64,9 +76,9 @@ class LoginScreenState extends State<LoginScreen> with ValidationMixin {
     return TextFormField(
       keyboardType: TextInputType.emailAddress,
       decoration:
-          InputDecoration(labelText: 'Username', hintText: 'example123'),
+      InputDecoration(labelText: 'Email', hintText: 'example@gmail.com'),
       onSaved: (value) {
-        username = value;
+        email = value;
       },
     );
   }
@@ -75,7 +87,7 @@ class LoginScreenState extends State<LoginScreen> with ValidationMixin {
     return TextFormField(
       obscureText: true,
       decoration:
-          InputDecoration(labelText: 'Enter Password', hintText: 'Password'),
+      InputDecoration(labelText: 'Enter Password', hintText: 'Password'),
       validator: validatePassword,
       onSaved: (value) {
         password = value;
@@ -90,19 +102,9 @@ class LoginScreenState extends State<LoginScreen> with ValidationMixin {
       onPressed: () {
         if (formKey.currentState.validate()) {
           formKey.currentState.save();
-          print('Time to post my $username and $password to API!');
-          login(username, password);
+          print('Time to post my $email $username and $password to API!');
+          login(username,password,email);
         }
-      },
-    );
-  }
-
-  Widget signUp() {
-    return RaisedButton(
-      color: Colors.blue,
-      child: Text('SignUp'),
-      onPressed: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => SignUpScreen()));
       },
     );
   }

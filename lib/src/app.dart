@@ -7,6 +7,7 @@ class App extends StatelessWidget{
       title: ('Hello my app!'),
       home: Scaffold(
         body: LoginScreen(),
+
       ),
     );
   }
